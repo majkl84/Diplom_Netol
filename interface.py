@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from config import comunity_token, acces_token
 from core import VkTools
 import data_new
+from data_new import delete_worksheets_in_db
 
 engine = create_engine("sqlite:///db.sqlite")
 Session = sessionmaker(bind=engine)
@@ -37,6 +38,10 @@ class BotInterface():
     def check_worksheet_in_db(self, profile_id, worksheet_id):
         result = data_new.check_user(profile_id, worksheet_id)
         return result
+
+        # удаление записей из базы данных для заданного профиля
+    def delete_user_worksheets_in_db(self, profile_id):
+        delete_worksheets_in_db(profile_id)
 
     # обработка событий / получение сообщений
     def event_handler(self):
@@ -88,6 +93,11 @@ class BotInterface():
                     else:
                         self.message_send(
                             event.user_id, 'Нет больше анкет')
+                elif event.text.lower() == 'очистка':  # добавляем обработку команды "очистка"
+                    '''Логика для очистки базы данных'''
+                    self.delete_user_worksheets_in_db(event.user_id)
+                    self.message_send(
+                        event.user_id, 'База данных очищена')
                 elif event.text.lower() == 'пока':
                     self.message_send(
                         event.user_id, 'До новых встреч')

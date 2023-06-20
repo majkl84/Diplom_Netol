@@ -27,6 +27,12 @@ def check_user(profile_id, worksheet_id):
             Viewed.worksheet_id == worksheet_id
         ).first()
         return True if from_db else False
+def delete_worksheets_in_db(profile_id):
+    with Session() as session:
+        session.query(Viewed).filter(
+            Viewed.profile_id == profile_id
+        ).delete()
+        session.commit()
 
 if __name__ == '__main__':
     Base.metadata.create_all(engine)
