@@ -34,11 +34,11 @@ class BotInterface():
 
     # добавление записи в базу данных
     def add_worksheet_to_db(self, profile_id, worksheet_id):
-        data_new.add_user(profile_id, worksheet_id)
+        data.add_user(profile_id, worksheet_id)
 
     # проверка наличия анкеты в базе данных
     def check_worksheet_in_db(self, profile_id, worksheet_id):
-        result = data_new.check_user(profile_id, worksheet_id)
+        result = data.check_user(profile_id, worksheet_id)
         return result
 
     # удаление записей из базы данных для заданного профиля
@@ -118,6 +118,6 @@ class BotInterface():
 
 
 if __name__ == '__main__':
-    data_new.Base.metadata.create_all(engine)
+    data.Base.metadata.create_all(engine)
     bot_interface = BotInterface(comunity_token, acces_token)
     bot_interface.event_handler()
