@@ -7,9 +7,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from config import comunity_token, acces_token
 from core import VkTools
-import data_new
-from data_new import delete_worksheets_in_db
-
+import data
+from data import delete_worksheets_in_db
 
 engine = create_engine("sqlite:///db.sqlite")
 Session = sessionmaker(bind=engine)
@@ -62,7 +61,8 @@ class BotInterface():
                     '''Логика для получения данных о пользователе'''
                     self.params = self.vk_tools.get_profile_info(event.user_id)
                     self.message_send(
-                        event.user_id, f'Привет друг, {self.params["name"]}', keyboard=keyboard)  # добавлен аргумент keyboard
+                        event.user_id, f'Привет друг, {self.params["name"]}',
+                        keyboard=keyboard)  # добавлен аргумент keyboard
                 elif event.text.lower() == 'поиск':
                     '''Логика для поиска анкет'''
                     self.message_send(event.user_id, 'Начинаем поиск', keyboard=keyboard)  # добавлен аргумент keyboard
@@ -83,7 +83,8 @@ class BotInterface():
                         try:
                             self.add_worksheet_to_db(profile_id, worksheet_id)
                         except IntegrityError:
-                            print(f"Ошибка добавления анкеты {worksheet_id} для пользователя {profile_id}: анкета уже есть в базе данных")
+                            print(
+                                f"Ошибка добавления анкеты {worksheet_id} для пользователя {profile_id}: анкета уже есть в базе данных")
                             continue  # перейти к следующей анкете, еслипроизошла ошибка добавления в базу данных
                         else:
                             print(f'Анкета {worksheet_id} добавлена в базу данных для пользователя {profile_id}')
