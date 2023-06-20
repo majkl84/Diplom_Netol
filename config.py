@@ -1,0 +1,4 @@
+comunity_token = 'vk1.a.ZkC6NMiBj4wJZIdKrgydOdN1iY1kmDjcXWFY5yfYDZasF9r8-m5hNHUjV9rfpFdWadNl0zf1o3ijTyjqJ-fCyNP2wxT-3QJksZoOiP7CaNosyiSdceuCYFGI-pRHJa6wYG2rMfcAzTJeNMd-tYoILgIguJNnNFl9ijpUwL-eKW57wc2rWBr1hkWNA8ZJlNvRzXcaHPcF_AApYveQEaLokA'
+acces_token = 'vk1.a.zTMpFTT2M5IU2qrJMVrY3-ykO8AbgbAm_JkzT-rtQ0L46hK-knpT-eg0RBtT4mjjAPo0fW2mICUtBTmvuicQ0BSnsvlXGf0m4otXOKqgUqMpgBk7Qy89tQq1C_vly9-Xbb4sJK6qXC-4jD9RG3jj8h5iMjqEFchy61pxfMsLwlVwie3vLAE5WoeteuxErLBE'
+# https://oauth.vk.com/authorize?client_id=51677993&display=page&scope=stats.offline&response_type=token&v=5.131
+# https://oauth.vk.com/blank.html#access_token=vk1.a.zTMpFTT2M5IU2qrJMVrY3-ykO8AbgbAm_JkzT-rtQ0L46hK-knpT-eg0RBtT4mjjAPo0fW2mICUtBTmvuicQ0BSnsvlXGf0m4otXOKqgUqMpgBk7Qy89tQq1C_vly9-Xbb4sJK6qXC-4jD9RG3jj8h5iMjqEFchy61pxfMsLwlVwie3vLAE5WoeteuxErLBE&expires_in=86400&user_id=69616967
