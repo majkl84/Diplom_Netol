@@ -30,7 +30,8 @@ class VkTools:
         'first_name' in info and 'last_name' in info else None,
                   'sex': info.get('sex'),
                   'city': info.get('city')['title'] if info.get('city') is not None else None,
-                  'year': self._bdate_toyear(info.get('bdate'))
+                  'year': self._bdate_toyear(info.get('bdate')),
+                  'relation': info.get('relation')
                   }
         result = self.ask_user(result)
         return result
@@ -55,7 +56,8 @@ class VkTools:
                                           'sex': 1 if params['sex'] == 2 else 2,
                                           'has_photo': True,
                                           'age_from': params['year'] - 3,
-                                          'age_to': params['year'] + 3,
+                                          'age_to': params['year'] + 1,
+                                          'relation': [1, 6],
                                       }
                                       )
         except ApiError as e:
