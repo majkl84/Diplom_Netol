@@ -42,6 +42,3 @@ def delete_worksheets_in_db(profile_id):
 
 if __name__ == '__main__':
     Base.metadata.create_all(engine)
-    # add_user(2113, 124512)
-    # res = check_user(2113, 1245121)
-    # print(res)
