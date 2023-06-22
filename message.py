@@ -1,9 +1,11 @@
 import time
 import vk_api
+from vk_api.longpoll import VkEventType
 from vk_api.utils import get_random_id
-
+LONGPOLL_TIMEOUT = 5
 
 class VkMessenger():
+    """Класс для отправки сообщений через VK Long Poll API"""
     def __init__(self, token):
         self.vk = vk_api.VkApi(token=token)
 
@@ -16,22 +18,25 @@ class VkMessenger():
             'keyboard': keyboard,
         })
 
-    def wait_for_message(self, user_id, timeout=5):
+    def wait_for_message(self, user_id):
         start_time = time.time()
-        while time.time() - start_time < timeout:
-            response = self.vk.method('messages.getLongPollServer', {})
-            server, key, ts = response['server'], response['key'], response['ts']
-            lp_response = self._get_longpoll_messages(server, key, ts, timeout)
-            for event in lp_response['updates']:
-                if isinstance(event, dict) and event.get('type') == 'message_new' and event['object'].get(
-                        'user_id') == user_id:
-                    print(
-                        f"Received message '{event['object']['text']}' from user {user_id}")  # временный print-оператор
-                    return event['object']
-            print(f"No message received from user {user_id}")  # временный print-оператор
-        return None
+        while time.time() - start_time < LONGPOLL_TIMEOUT:
+            longpoll_server_url = self.get_longpoll_server_url()
+            messages = self.get_new_messages(longpoll_server_url, LONGPOLL_TIMEOUT)
+            for event in messages['updates']:
+                if isinstance(event, VkEventType) and event.type == 'message_new' and event.user_id == user_id:
+                    message_event = {
+                        'type': 'message_new',
+                        'object': {
+                            'user_id': event.user_id,
+                            'text': event.text
+                        }
+                    }
+                    return message_event
+    def get_longpoll_server_url(self):
+        response = self.vk.method('messages.getLongPollServer', {})
+        return f"https://{response['server']}?act=a_check&key={response['key']}&ts={response['ts']}&wait={LONGPOLL_TIMEOUT}"
 
-    def _get_longpoll_messages(self, server, key, ts, timeout):
-        url = f"https://{server}?act=a_check&key={key}&ts={ts}&wait={timeout}"
-        response = self.vk.http.get(url)
+    def get_new_messages(self, longpoll_server_url, timeout):
+        response = self.vk.http.get(longpoll_server_url, timeout=timeout)
         return response.json()
