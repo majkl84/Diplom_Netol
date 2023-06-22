@@ -2,10 +2,13 @@ import time
 import vk_api
 from vk_api.longpoll import VkEventType
 from vk_api.utils import get_random_id
+
 LONGPOLL_TIMEOUT = 5
+
 
 class VkMessenger():
     """Класс для отправки сообщений через VK Long Poll API"""
+
     def __init__(self, token):
         self.vk = vk_api.VkApi(token=token)
 
@@ -33,6 +36,7 @@ class VkMessenger():
                         }
                     }
                     return message_event
+
     def get_longpoll_server_url(self):
         response = self.vk.method('messages.getLongPollServer', {})
         return f"https://{response['server']}?act=a_check&key={response['key']}&ts={response['ts']}&wait={LONGPOLL_TIMEOUT}"
