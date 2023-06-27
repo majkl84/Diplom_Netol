@@ -3,14 +3,17 @@ from vk_api import VkApi
 from vk_api.exceptions import ApiError
 from pprint import pprint
 from datetime import datetime
+from vk_api.longpoll import VkLongPoll
 from config import access_token, comunity_token
-from message import VkMessenger
+
 
 
 class VkTools:
     def __init__(self, access_token):
-        self.messenger = VkMessenger(comunity_token)
+        self.vk = VkApi(token=access_token)
+        self.longpoll = VkLongPoll(self.vk, wait=20)
         self.vkapi = VkApi(token=access_token)
+
 
     def _bdate_toyear(self, bdate):
         user_year = bdate.split('.')[2]
