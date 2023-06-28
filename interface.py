@@ -42,6 +42,11 @@ class BotInterface():
     def check_worksheet_in_db(self, profile_id, worksheet_id):
         with Session() as session:
             result = data.check_user(session, profile_id, worksheet_id)
+        data.add_user(profile_id, worksheet_id)
+
+    # проверка наличия анкеты в базе данных
+    def check_worksheet_in_db(self, profile_id, worksheet_id):
+        result = data.check_user(profile_id, worksheet_id)
         return result
 
     # удаление записей из базы данных для заданного профиля
