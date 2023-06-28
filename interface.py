@@ -5,8 +5,8 @@ from vk_api.utils import get_random_id
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
-from config import comunity_token, acces_token
-from core import VkTools
+from config import comunity_token, access_token
+
 import data
 from data import delete_worksheets_in_db
 
@@ -15,13 +15,14 @@ Session = sessionmaker(bind=engine)
 
 
 class BotInterface():
-    def __init__(self, comunity_token, acces_token):
+    def __init__(self, comunity_token, access_token):
         self.vk = vk_api.VkApi(token=comunity_token)
         self.longpoll = VkLongPoll(self.vk)
-        self.vk_tools = VkTools(acces_token)
         self.params = {}
         self.worksheets = []
         self.offset = 0
+        self.access_token = access_token
+
 
     def message_send(self, user_id, message, attachment=None, keyboard=None):  # добавлен аргумент keyboard
         self.vk.method('messages.send', {
@@ -54,21 +55,25 @@ class BotInterface():
 
     # обработка событий / получение сообщений
     def event_handler(self):
-        keyboard = self.create_keyboard()  # создаем клавиатуру
+        from core import VkTools
+
+        vk_tools = VkTools(self.access_token)  # создаем экземпляр VkTools с помощью access_token
+        keyboard = self.create_keyboard()
         for event in self.longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                self.params = self.vk_tools.get_profile_info(event.user_id, event)
                 if event.text.lower() == 'привет':
                     '''Логика для получения данных о пользователе'''
-                    self.params = self.vk_tools.get_profile_info(event.user_id)
+                    self.params = vk_tools.get_profile_info(event.user_id)
                     self.message_send(
                         event.user_id, f'Привет друг, {self.params["name"]}',
-                        keyboard=keyboard)  # добавлен аргумент keyboard
+                        keyboard=keyboard)
                 elif event.text.lower() == 'поиск':
                     '''Логика для поиска анкет'''
-                    self.message_send(event.user_id, 'Начинаем поиск', keyboard=keyboard)  # добавлен аргумент keyboard
+                    self.message_send(event.user_id, 'Начинаем поиск', keyboard=keyboard)
                     if not self.worksheets:
                         self.offset = 0
-                        self.worksheets = self.vk_tools.search_worksheet(self.params, self.offset)
+                        self.worksheets = vk_tools.search_worksheet(self.params, self.offset)
                     while self.worksheets:
                         worksheet = self.worksheets.pop()
                         worksheet_id = worksheet["id"]
@@ -77,7 +82,7 @@ class BotInterface():
                         # проверка анкеты в базе данных
                         if self.check_worksheet_in_db(profile_id, worksheet_id):
                             print(f'Анкета {worksheet_id} уже просмотрена пользователем {profile_id}')
-                            continue  # перейти к следующей анкете, если текущая анкета уже есть в базе данных
+                            continue
 
                         # добавление анкеты в базу данных
                         try:
@@ -85,10 +90,10 @@ class BotInterface():
                         except IntegrityError:
                             print(
                                 f"Ошибка добавления анкеты {worksheet_id} для пользователя {profile_id}: анкета уже есть в базе данных")
-                            continue  # перейти к следующей анкете, еслипроизошла ошибка добавления в базу данных
+                            continue
                         else:
                             print(f'Анкета {worksheet_id} добавлена в базу данных для пользователя {profile_id}')
-                        photos = self.vk_tools.get_photos(worksheet_id)
+                        photos = vk_tools.get_photos(worksheet_id)
                         photo_string = ''
                         for photo in photos:
                             photo_string += f'photo{photo["owner_id"]}_{photo["id"]},'
@@ -98,26 +103,26 @@ class BotInterface():
                             event.user_id,
                             f'имя: {worksheet["name"]} ссылка: vk.com/id{worksheet["id"]}',
                             attachment=photo_string,
-                            keyboard=keyboard,  # добавлен аргумент keyboard
+                            keyboard=keyboard,
                         )
-                        break  # выйти из цикла while и закончить поиск анкет, если найдена анкета, которой нет в базе данных
+                        break
                     else:
                         self.message_send(
-                            event.user_id, 'Нет больше анкет', keyboard=keyboard)  # добавлен аргумент keyboard
+                            event.user_id, 'Нет больше анкет', keyboard=keyboard)
                 elif event.text.lower() == 'очистка':
                     '''Логика для очистки базы данных'''
                     self.delete_user_worksheets_in_db(event.user_id)
                     self.message_send(
-                        event.user_id, 'База данных очищена', keyboard=keyboard)  # добавлен аргумент keyboard
+                        event.user_id, 'База данных очищена', keyboard=keyboard)
                 elif event.text.lower() == 'пока':
                     self.message_send(
-                        event.user_id, 'До новых встреч', keyboard=keyboard)  # добавлен аргумент keyboard
+                        event.user_id, 'До новых встреч', keyboard=keyboard)
                 else:
                     self.message_send(
-                        event.user_id, 'Неизвестная команда', keyboard=keyboard)  # добавлен аргумент keyboard
+                        event.user_id, 'Неизвестная команда', keyboard=keyboard)
 
 
 if __name__ == '__main__':
     data.Base.metadata.create_all(engine)
-    bot_interface = BotInterface(comunity_token, acces_token)
+    bot_interface = BotInterface(comunity_token, access_token)
     bot_interface.event_handler()
