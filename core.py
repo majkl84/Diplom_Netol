@@ -7,13 +7,18 @@ from vk_api.longpoll import VkLongPoll
 from config import access_token, comunity_token
 
 
-
 class VkTools:
+<<<<<<< Updated upstream
     def __init__(self, access_token):
         self.vk = VkApi(token=access_token)
         self.longpoll = VkLongPoll(self.vk, wait=20)
         self.vkapi = VkApi(token=access_token)
 
+=======
+    def __init__(self, access_token, interface=None):
+        self.vkapi = vk_api.VkApi(token=access_token)
+        self.interface = interface
+>>>>>>> Stashed changes
 
     def _bdate_toyear(self, bdate):
         user_year = bdate.split('.')[2]
@@ -117,5 +122,8 @@ if __name__ == '__main__':
     worksheets = tools.search_worksheet(params, 20)
     worksheet = worksheets.pop()
     photos = tools.get_photos(worksheet['id'])
+<<<<<<< Updated upstream
 
     pprint(worksheets)
+=======
+>>>>>>> Stashed changes

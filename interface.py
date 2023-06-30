@@ -23,7 +23,11 @@ class BotInterface():
         self.offset = 0
         self.keyboard = self.create_keyboard()
 
+<<<<<<< Updated upstream
     def message_send(self, user_id, message, attachment=None):
+=======
+    def message_send(self, user_id, message, attachment=None, keyboard=None):  # добавлен аргумент keyboard
+>>>>>>> Stashed changes
         self.vk.method('messages.send', {
             'user_id': user_id,
             'message': message,
