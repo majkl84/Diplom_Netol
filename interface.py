@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from config import comunity_token, access_token
-
+from core import VkTools
 import data
 from data import delete_worksheets_in_db
 
@@ -22,6 +22,8 @@ class BotInterface():
         self.worksheets = []
         self.offset = 0
         self.access_token = access_token
+        self.vk_tools = VkTools(access_token, self)
+        self.results = {}
 
 
     def message_send(self, user_id, message, attachment=None, keyboard=None):  # добавлен аргумент keyboard
@@ -53,18 +55,26 @@ class BotInterface():
         keyboard.add_button('Очистка БД', color=VkKeyboardColor.NEGATIVE)
         return keyboard.get_keyboard()
 
+    def wait_for_message(self, user_id, event=None):
+        if event is not None:
+            for ev in self.longpoll.listen(events=event):
+                if ev.type == VkEventType.MESSAGE_NEW and ev.to_me and ev.user_id == user_id:
+                    return ev.text
+        else:
+            for ev in self.longpoll.listen():
+                if ev.type == VkEventType.MESSAGE_NEW and ev.to_me and ev.user_id == user_id:
+                    return ev.text
+
     # обработка событий / получение сообщений
     def event_handler(self):
         from core import VkTools
-
-        vk_tools = VkTools(self.access_token)  # создаем экземпляр VkTools с помощью access_token
         keyboard = self.create_keyboard()
         for event in self.longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-                self.params = self.vk_tools.get_profile_info(event.user_id, event)
+                self.params = self.vk_tools.get_profile_info(event.user_id)
                 if event.text.lower() == 'привет':
                     '''Логика для получения данных о пользователе'''
-                    self.params = vk_tools.get_profile_info(event.user_id)
+                    self.params = self.vk_tools.get_profile_info(event.user_id)
                     self.message_send(
                         event.user_id, f'Привет друг, {self.params["name"]}',
                         keyboard=keyboard)
@@ -73,7 +83,7 @@ class BotInterface():
                     self.message_send(event.user_id, 'Начинаем поиск', keyboard=keyboard)
                     if not self.worksheets:
                         self.offset = 0
-                        self.worksheets = vk_tools.search_worksheet(self.params, self.offset)
+                        self.worksheets = self.vk_tools.search_worksheet(self.params, self.offset)
                     while self.worksheets:
                         worksheet = self.worksheets.pop()
                         worksheet_id = worksheet["id"]
@@ -93,7 +103,7 @@ class BotInterface():
                             continue
                         else:
                             print(f'Анкета {worksheet_id} добавлена в базу данных для пользователя {profile_id}')
-                        photos = vk_tools.get_photos(worksheet_id)
+                        photos = self.vk_tools.get_photos(worksheet_id)
                         photo_string = ''
                         for photo in photos:
                             photo_string += f'photo{photo["owner_id"]}_{photo["id"]},'

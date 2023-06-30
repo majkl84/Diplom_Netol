@@ -2,20 +2,19 @@ import vk_api
 from vk_api.exceptions import ApiError
 from datetime import datetime
 from config import access_token
-from interface import BotInterface
+
 
 
 class VkTools:
-    def __init__(self, access_token):
+    def __init__(self, access_token, interface=None):
         self.vkapi = vk_api.VkApi(token=access_token)
-        self.interface = BotInterface
-
+        self.interface = interface
     def _bdate_toyear(self, bdate):
         user_year = bdate.split('.')[2]
         now = datetime.now().year
         return now - int(user_year)
 
-    def get_profile_info(self, user_id):
+    def get_profile_info(self, user_id, event=None):
         try:
             info, = self.vkapi.method('users.get',
                                       {'user_id': user_id,
@@ -33,30 +32,53 @@ class VkTools:
                   'year': self._bdate_toyear(info.get('bdate')),
                   'relation': info.get('relation')
                   }
-        result = self.ask_user(user_id, result, self.interface, event)
+        result = self.ask_user(result, user_id, self.interface, event=event)
         return result
 
-    def ask_user(self, result, user_id, interface, event=None):
-        if 'city' not in result or not result['city']:
-            interface.message_send(user_id=user_id, message='Введите город:', event=event)
-            city = interface.wait_for_message(user_id, event=event)
-            print(city)  # временный print-оператор
-            if city:
-                result['city'] = city['text']
+    def ask_user(self, result, user_id, interface, event=None, asked_params=[], ask_count=3):
+        if not result.get('city') and 'city' not in asked_params:
+            interface.message_send(user_id=user_id, message='Введите город:')
+            city = interface.wait_for_message(user_id=user_id, event=event)
+            if city and city.strip():
+                result['city'] = city.strip()
+                asked_params.append('city')
+            else:
+                ask_count -= 1
+                if ask_count > 0:
+                    return self.ask_user(result, user_id, interface, event=event, asked_params=ask_params,
+                                         ask_count=ask_count)
 
-        if 'sex' not in result or not result['sex']:
-            interface.message_send(user_id=user_id, message='Введите пол (1 - женский, 2 - мужской):', event=event)
-            sex = interface.wait_for_message(user_id, event=event)
-            print(sex)  # временный print-оператор
-            if sex:
-                result['sex'] = int(sex['text'])
+        if not result.get('sex') and 'sex' not in asked_params:
+            interface.message_send(user_id=user_id, message='Введите пол (1 - женский, 2 - мужской):')
+            sex = interface.wait_for_message(user_id=user_id, event=event)
+            if sex and sex.isdigit() and int(sex) in (1, 2):
+                result['sex'] = int(sex)
+                asked_params.append('sex')
+            else:
+                ask_count -= 1
+                if ask_count > 0:
+                    return self.ask_user(result, user_id, interface, event=event, asked_params=ask_params,
+                                         ask_count=ask_count)
 
-        if 'year' not in result or not result['year']:
-            interface.message_send(user_id=user_id, message='Введите дату рождения в формате ДД.ММ.ГГГГ:', event=event)
-            bdate = interface.wait_for_message(user_id, event=event)
-            print(bdate)  # временный print-оператор
-            if bdate:
-                result['year'] = self._bdate_toyear(bdate['text'])
+        if not result.get('year') and 'year' not in asked_params:
+            interface.message_send(user_id=user_id, message='Введите дату рождения в формате ДД.ММ.ГГГГ:')
+            bdate = interface.wait_for_message(user_id=user_id, event=event)
+            if bdate and bdate.strip():
+                year = self._bdate_toyear(bdate)
+                if year:
+                    result['year'] = year
+                    asked_params.append('year')
+                else:
+                    ask_count -= 1
+                    if ask_count > 0:
+                        return self.ask_user(result, user_id, interface, event=event, asked_params=ask_params,
+                                             ask_count=ask_count)
+            else:
+                ask_count -= 1
+                if ask_count > 0:
+                    return self.ask_user(result, user_id, interface, event=event, asked_params=ask_params,
+                                         ask_count=ask_count)
+
         return result
 
     def search_worksheet(self, params, offset):
@@ -107,8 +129,8 @@ class VkTools:
 
 if __name__ == '__main__':
     user_id = 69616967
-    interface = BotInterface(access_token)
-    tools = VkTools(access_token, interface)
+    # interface = BotInterface(access_token)
+    tools = VkTools(access_token)
     params = tools.get_profile_info(user_id)
     worksheets = tools.search_worksheet(params, 20)
     worksheet = worksheets.pop()
