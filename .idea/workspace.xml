@@ -8,13 +8,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3a074942-1130-4937-9ec5-6166b3c98df2" name="Changes" comment="">
-<<<<<<< Updated upstream
+
+      <change beforePath="$PROJECT_DIR$/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/core.py" afterDir="false" />
+
       <change beforePath="$PROJECT_DIR$/interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/interface.py" afterDir="false" />
-=======
+
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/message.py" beforeDir="false" afterPath="$PROJECT_DIR$/message.py" afterDir="false" />
->>>>>>> Stashed changes
+
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
